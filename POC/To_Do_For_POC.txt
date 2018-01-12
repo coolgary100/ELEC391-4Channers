@@ -1,0 +1,9 @@
+To do list because i forget everything. Just put an x if it's done?
+
+- Test Arduino Code on the Board
+	-> Decide any additional features to add or change
+	-> Decide if it's enough to meet the power/digital electronics 
+- Decide how we will build the encoder
+	-> Test
+- Clean out system model 
+	->Decide what we need for the initial POC system model
