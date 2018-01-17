@@ -19,43 +19,51 @@
 */
 
 // constants won't change. They're used here to set pin numbers:
-const int buttonPin = 2;     // the number of the pushbutton pin
-const int buttonPin1 = 3;    // the number of the second pushbutton pin
-const int ledPin =  13;      // the number of the LED pin
-const int andGate1 = 7;      // output that feeds into input of an AND gate
-const int andGate2 = 8; 	 // output that feeds into input of an AND gate
+const int buttonPin = 4;     // the number of the pushbutton pin
+//const int buttonPin1 = 3;    // the number of the second pushbutton pin
+const int ledPin =  5;      // the number of the LED pin
+//const int andGate1 = 7;      // output that feeds into input of an AND gate
+//onst int andGate2 = 8; 	 // output that feeds into input of an AND gate
 
 // variables will change:
 int buttonState = 0;         // variable for reading the pushbutton status
-int buttonState1 = 0;         // variable for reading the pushbutton status
+//int buttonState1 = 0;         // variable for reading the pushbutton status
 
 void setup() {
   // initialize the LED pin as an output:
   pinMode(ledPin, OUTPUT);
   // initialize the pushbutton pin as an input:
   pinMode(buttonPin, INPUT);
+  Serial.begin(9600);
   // initialize the second pushbutton pin as an input:
-  pinMode(buttonPin1, INPUT);
+  //pinMode(buttonPin1, INPUT);
   // intialize the 2 output to AND gate as output
-  pinMode(andGate1, OUTPUT);
-  pinMode(andGate2, OUTPUT);
+  //pinMode(andGate1, OUTPUT);
+  //pinMode(andGate2, OUTPUT);
 }
 
 void loop() {
   // read the state of the pushbutton value:
   buttonState = digitalRead(buttonPin);
-  buttonState1 = digitalRead(buttonPin1);
-
+  //buttonState1 = digitalRead(buttonPin1);
+  Serial.println(buttonState);
   // check if the pushbutton is pressed. If it is, the buttonState is HIGH:
   if (buttonState == HIGH) {
     // turn LED on:
-    digitalWrite(ledPin, HIGH);
+    delay(50);
+    Serial.println("On");
+    digitalWrite(ledPin, LOW);
   } else {
     // turn LED off:
-    digitalWrite(ledPin, LOW);
+    delay(50);
+    Serial.println("Off");
+    digitalWrite(ledPin, HIGH);
   }
+
+  
   
   // check if the pushbuttons are pressed. If they are, the button states are HIGH:
+  /*
   if (buttonState == HIGH) {
 	  // output HIGH from andGate1:
 	  digitalWrite(andGate1, HIGH);
@@ -71,5 +79,5 @@ void loop() {
 	  // output LOW from andGate2:
 	  digitalWrite(andGate2, LOW);
   }
-  
+  */
 }
