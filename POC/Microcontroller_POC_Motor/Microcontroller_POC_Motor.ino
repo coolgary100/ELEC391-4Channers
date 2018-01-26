@@ -9,7 +9,7 @@
 // Pin Assignments
 const byte aPin = 2;
 const byte bPin = 3;
-const byte enablePin = 4;
+const byte enablePin = 9;
 const byte fwdPin = 5;
 const byte bwdPin = 6;
 const byte buttonPin = 7;
@@ -65,6 +65,13 @@ void setup() {
 void loop() {
 
   //If the button is pressed, got to next state
+
+  byte PWM_out_level;
+
+  PWM_out_level = 25;
+
+  analogWrite(enablePin, PWM_out_level);
+  
   if( digitalRead(buttonPin) == LOW){
     state = nstate;
     delay(100);
@@ -76,7 +83,8 @@ void loop() {
     motorPos = motorPos_ISR;
   }while(interruptFlag);
 
-  Serial.print(motorPos);
+  Serial.println(motorPos);
+  Serial.println(dir);
   
 }
 
@@ -136,6 +144,7 @@ ISR ROUTINES
 void ISR_A(){
   // if last trans was A, then direction was switched
   if(transition == true) dir = !dir;
+  transition = true;
   interruptFlag = true;
   
   motorPos_ISR = dir ? (motorPos_ISR + 1) : (motorPos_ISR - 1);
@@ -144,6 +153,7 @@ void ISR_A(){
 void ISR_B(){
   //if last trans was B, direction was switched
   if(transition == false) dir = !dir;
+  transition = false;
   interruptFlag = true;
   
   motorPos_ISR = dir ? (motorPos_ISR + 1) : (motorPos_ISR - 1);
