@@ -68,7 +68,7 @@ void loop() {
 
   byte PWM_out_level;
 
-  PWM_out_level = 25;
+  PWM_out_level = 30;
 
   analogWrite(enablePin, PWM_out_level);
   
