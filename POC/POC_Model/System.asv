@@ -44,6 +44,58 @@ AmpSat0 = 0;
 % Electrical Motor Dynamics
 % -------------------------
 Elec0n  = [0 0 1];               % Numerator
+Elec0d  = [0 0 12/0.93];     % The denominator is sL + R where L is 0.362 mH and R is 5.39 Ohms
+
+% Torque Const & Back EMF
+% -----------------------
+TConst0  = (122.8/10000)/(0.93-0.19); %Max Torque/(stall current - no-load current)
+
+BackEMF0 = 1/(((4800/12)/60)*2*pi); 
+
+% Inverse of the speed constant (875 rpm/v) after converting rpm to rad/s 
+% in order to multiply output of mechanical dynamic to get voltage gain
+
+% Mechanical Motor Dynamics
+% -------------------------
+Mech0n  = [0 0 1];               % Numerator
+Mech0d  = [0 (TCons0*0.19)/((7200/60)*2*pi)];  
+
+% Denominator is Js^2 + Bs + K (Spring constant (700 mNm/rev) converted to 
+% Nm (Multiple by 10^(-3)) and rev to rad (Divide by 2pi))
+% Inertia was calculated relative to the center of the link (9mm away from
+% the counter weight and the motors) using superposition
+% Friction was calculated using no load current and no load speed as it was
+% assumed to be the friction the torque would need to overcome when there
+% is no load on the motor
+
+% Sensor Dynamics
+% ---------------
+Sens0    =  0; % Sensor gain is the max/min sensor voltage (5V)
+SensSat0 =  0; % Angular range is 180 degrees which is equivalent to pi
+
+% Static Friction
+% ---------------
+
+StFric0 = 0; 
+
+% static friction is calculated through uSF (converted to m from um) * mass of the entire sphereical wrist ignoring mass of Q0
+% Q0 was ignored because it was assumed the only mass acting from this
+% motor were the rotors which were of negligible mass.
+
+% =============================
+% Q1 : Rotation about x-axis
+% =============================
+
+% Amplifier Dynamics
+% ------------------
+Amp0n   = [0 0 0];               % Numerator 
+Amp0d   = [0 0 0];               % Denominator
+
+AmpSat0 = 0;                        
+
+% Electrical Motor Dynamics
+% -------------------------
+Elec0n  = [0 0 1];               % Numerator
 Elec0d  = [0 0 0];     % The denominator is sL + R where L is 0.362 mH and R is 5.39 Ohms
 
 % Torque Const & Back EMF
@@ -58,21 +110,7 @@ BackEMF0 = 0;
 % Mechanical Motor Dynamics
 % -------------------------
 Mech0n  = [0 1 0];               % Numerator
-
-%AMAX22_5W_SB
-Mech0d  = [JTotal 3.3628*10^(-7) 1.1140846*10^(-3)];  
-
-%AMAX22_6W_SB
-%Mech0d = [JTotal 9.347*10^(-7) 1.1140846*10^(-3)];
-
-%AMAX19_2p5W_SB
-%Mech0d = [JTotal 9.35*10^(-7) 1.1140846*10^(-3)];
-
-%AMAX16_2W_SB
-%Mech0d = [JTotal 6.239*10^(-7) 1.1140846*10^(-3)];
-
-%AMAX12_p75W_SB
-%Mech0d = [JTotal 6.41*10^(-8) 1.1140846*10^(-3)];
+Mech0d  = [0 0 0];  
 
 % Denominator is Js^2 + Bs + K (Spring constant (700 mNm/rev) converted to 
 % Nm (Multiple by 10^(-3)) and rev to rad (Divide by 2pi))
@@ -84,123 +122,13 @@ Mech0d  = [JTotal 3.3628*10^(-7) 1.1140846*10^(-3)];
 
 % Sensor Dynamics
 % ---------------
-Sens0    =  1.5915; % Sensor gain is the max/min sensor voltage (5V)
-SensSat0 =  5; % Angular range is 180 degrees which is equivalent to pi
+Sens0    =  0; % Sensor gain is the max/min sensor voltage (5V)
+SensSat0 =  0; % Angular range is 180 degrees which is equivalent to pi
 
 % Static Friction
 % ---------------
 
-%Same for AMAX22_5W_SB, AMAX22_6W_SB
-StFric0 = 8.0804*10^(-4); 
-
-%AMAX19_2p5W_SB
-%StFric0 = 5.333587*10^(-4);
-
-%AMAX16_2W_SB
-%StFric0 = 3.548166*10^(-4);
-
-%AMAX12_p75W_SB
-%StFric0 = 2.174767*10^(-4);
-
-% static friction is calculated through uSF (converted to m from um) * mass of the entire sphereical wrist ignoring mass of Q0
-% Q0 was ignored because it was assumed the only mass acting from this
-% motor were the rotors which were of negligible mass.
-
-% =============================
-% Q1 : Rotation about x-axis
-% =============================
-
-% Amplifier Dynamics
-% ------------------
-Amp1n   = [0 0 207.5600];               % Numerator
-Amp1d   = [0 4.2240 207.6800];               % Denominator
-
-%Same for AMAX22_5W_SB, AMAX22_6W_SB, AMAX19_2p5W_SB
-%AmpSat1 = 12;
-
-%Same for AMAX16_2W_SB AMAX12_p75W_SB
-AmpSat1 = 9;
-
-% Electrical Motor Dynamics
-% -------------------------
-
-Elec1n  = [0 0 1];
-
-%AMAX22_5W_SB
-%Elec1d  = [0 0.000362 5.39];     % The denominator is sL + R where L is 0.362 mH and R is 5.39 Ohms
-
-%AMAX22_6W_SB
-%Elec1d = [0 0.000363 5.53];
-
-%AMAX19_2p5W_SB
-%Elec1d = [0 0.000719 13.8];
-
-%AMAX16_2W_SB
-%Elec1d = [0 0.000467 12.8];
-
-%AMAX12_p75W_SB
-Elec1d = [0 0.00101 40.9];
-
-% Torque Const & Back EMF
-% -----------------------
-%Same for AMAX22_5W_SB, AMAX22_6W_SB, AMAX19_2p5W_SB
-%TConst1  = 0.0109;              
-
-%AMAX16_2W_SB
-%TConst1 = 0.00688;
-
-%AMAX12_p75W_SB
-TConst1 = 0.00692;
-
-% Torque constant taken off from the data sheet 10.9 mNm/A converted to Nm/A
-
-%Same for AMAX22_5W_SB and AMAX22_6W_SB
-%BackEMF1 = 1/((875/60)*2*pi);   
-
-%AMAX19_2p5W_SB
-%BackEMF1 = 1/((874/60)*2*pi);
-
-%AMAX16_2W_SB
-%BackEMF1 = 1/((1390/60)*2*pi);
-
-%AMAX12_p75W_SB
-BackEMF1 = 1/((1380/60)*2*pi);
-
-% Inverse of the speed constant (875 rpm/v) after converting rpm to rad/s 
-% in order to multiply output of mechanical dynamic to get voltage gain
-
-% Mechanical Motor Dynamics
-% -------------------------
-Mech1n  = [0 0 1];               % Numerator
-
-%AMAX22_5W
-%Mech1d  = [RotJQ1 1.6814*10^(-7)];       
-
-%AMAX22_6W
-%Mech1d = [RotJQ1 4.67*10^(-7)];
-
-%AMAX19_2p5W_SB
-%Mech1d = [RotJQ1 4.675*10^(-5)];
-
-%AMAX16_2W_SB
-%Mech1d = [RotJQ1 3.11928188*10^(-7)];
-
-%%AMAX12_p75W_SB
-Mech1d = [RotJQ1 3.21*10^(-8)]; 
-
-% Denominator is Js^2 + Bs + K. No spring so K = 0 and the inertia is the rotational inertia of the motor RotJ (4.39 gcm^2 converted to kgm^2))
-% The friction was kept the same as Q0
-JntSat1 = pi/3; %Joint limit is 60 degress which is equivalent to pi/3
-
-% Sensor Dynamics
-% ---------------
-Sens1    =  1.5915;   % Sensor gain is the max/min sensor voltage (5V)
-SensSat1 =  5;  % Angular range is 180 degrees which is equivalent to pi
-
-% Static Friction
-% ---------------
-
-
+StFric0 = 0; 
 % ==================
 % TRANSFER FUNCTIONS
 % ==================

@@ -1,26 +1,44 @@
 /*
+  Purpose: To control a motor's speed and direction using feedback from an optical encoder
+  Requirements: Arduino Uno, Encoder, Motor, Current driver
+  Created by: Gary Jiang and Zachary Anderson
+  Resources:  https://www.arduino.cc/reference/en/language/functions/external-interrupts/attachinterrupt/
+              https://learn.adafruit.com/multi-tasking-the-arduino-part-2/timers
 */
 
-// constants won't change. They're used here to set pin numbers:
-const int enablePin = 2;
-const int fwdPin = 3;
-const int bwdPin = 4;
-const int buttonPin = 5;
-const int encoderA = 8;
-const int encoderB = 9;
+// Pin Assignments
+const byte aPin = 2;
+const byte bPin = 3;
+const byte enablePin = 9;
+const byte fwdPin = 5;
+const byte bwdPin = 6;
+const byte buttonPin = 7;
 
+// System Clock Frequency
 const unsigned long int CLK = 16001675;
 
-// State Parameters:
-const int idle = 0;
-const int motorStop = 1;
-const int forward = 2;
-const int backward = 3;
+// Values for external interupt.
+volatile long int motorPos_ISR = 0; //in degrees.  Assuming 360
+volatile bool dir = true; // true if forward, false if backward
+volatile bool transition = false; // true if last transition A, false if B
+volatile bool interruptFlag = false;
+volatile long int counterTime = 0;
 
-int state, nstate = 0;
+// State Parameters:
+enum stateType {
+  softStop,
+  forward,
+  backward
+  };
+
+stateType state = softStop;
+stateType nstate = forward;
+
+double motorPos = 0;
 
 void setup() {
-  // initialize the LED pin as an output:
+
+  // initialize output pins:
   pinMode(enablePin, OUTPUT);
   pinMode(fwdPin, OUTPUT);
   pinMode(bwdPin, OUTPUT);
@@ -28,43 +46,117 @@ void setup() {
   digitalWrite(fwdPin, LOW);
   digitalWrite(bwdPin, LOW);
   
-  // initialize the pushbutton pin as an input:
+  // initialize input pins:
   pinMode(buttonPin, INPUT);
-  pinMode(encoderA, INPUT);
-  pinMode(encoderB, INPUT);
+  pinMode(aPin, INPUT);
+  pinMode(bPin, INPUT);
+  
   Serial.begin(9600);
+
+  while ( !digitalRead(aPin) or !digitalRead(bPin)){
+    //Do nothing until motor is homed at 1,1
+    };
+  
+  // Enable the interupts to exec on any transition of A or B.
+  attachInterrupt(digitalPinToInterrupt(aPin), ISR_A, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(bPin), ISR_B, CHANGE);
 }
 
 void loop() {
-  // read the state of the pushbutton value:
-  String A = "A = ";
-  A = A + digitalRead(encoderA);
-  String B = "B = ";
-  B = B + digitalRead(encoderB);
-  Serial.println(A);
-  Serial.println(B);
-  if( digitalRead(buttonPin) == LOW){
-    state++;
-    if (state == 3) state = 0;
-    delay(100);
-    };
+
+  //If the button is pressed, got to next state
+
+  byte PWM_out_level;
+
+  PWM_out_level = 30;
+
+  analogWrite(enablePin, PWM_out_level);
   
-  if(state == 2){
+  if( digitalRead(buttonPin) == LOW){
+    state = nstate;
+    delay(100);
+    pinUpdate(state, &nstate);
+    };
+
+  do{
+    interruptFlag = false;
+    motorPos = motorPos_ISR;
+  }while(interruptFlag);
+
+  Serial.println(motorPos);
+  Serial.println(dir);
+  
+}
+
+/*
+================================================
+FUNCTIONS
+================================================
+*/
+
+/*
+Adjusts pin ouptuts based on current state.
+*/
+void pinUpdate(stateType state, stateType* nstate){
+  if(state == backward){
     digitalWrite(enablePin, HIGH);
     digitalWrite(fwdPin, LOW);
     digitalWrite(bwdPin, HIGH);
-    //Serial.println("BACKWARD");
+    *nstate = softStop;
   }
-  else if(state == 1){
+  else if(state == forward){
     digitalWrite(enablePin, HIGH);
     digitalWrite(fwdPin, HIGH);
     digitalWrite(bwdPin, LOW);
-    //Serial.println("FORWARD");
+    *nstate = backward;
   }
   else{
     digitalWrite(enablePin, LOW);
     digitalWrite(fwdPin, LOW);
     digitalWrite(bwdPin, LOW);
-    //Serial.println("STOP");
+    *nstate = forward;
     }
-}
+  };
+
+/*
+================================================
+ISR ROUTINES
+================================================
+*/
+  //Read from the encoder
+  /*
+  A,B = 0,0 ->1 staring point
+  A,B = 1,0 ->2 motor is moving forward
+  A,B = 0,1 ->2 motor is moving backward
+  A,B = 1,1 ->3 if it isn't this, dir is rev
+
+  A,B = 1,1 ->1 starting point
+  A,B = 0,1 ->2 motor is moving forward
+  A,B = 1,0 ->2 motor is moving backward
+  A,B = 0,0 ->3 if it isn't this, dir is rev
+
+  We will use an external interupt to count transitions of a and b with a counter.
+  We will use an timer interrupt to track time accurately.
+  If we are limited to 1 pin, we could connect A and B to an XOR gate and connect to
+  our external interrupt.  On the ext we read A and B.
+  */
+  
+void ISR_A(){
+  // if last trans was A, then direction was switched
+  if(transition == true) dir = !dir;
+  transition = true;
+  interruptFlag = true;
+  
+  motorPos_ISR = dir ? (motorPos_ISR + 1) : (motorPos_ISR - 1);
+  };
+
+void ISR_B(){
+  //if last trans was B, direction was switched
+  if(transition == false) dir = !dir;
+  transition = false;
+  interruptFlag = true;
+  
+  motorPos_ISR = dir ? (motorPos_ISR + 1) : (motorPos_ISR - 1);
+  };
+
+
