@@ -50,6 +50,12 @@ void setup() {
   pinMode(buttonPin, INPUT);
   pinMode(aPin, INPUT);
   pinMode(bPin, INPUT);
+
+  //Timer Initialization
+  noInterrupts();           // disable all interrupts
+
+  OCR0A = 0xAF;
+  TIMSK0 |= _BV(OCIE0A);
   
   Serial.begin(9600);
 
@@ -60,6 +66,7 @@ void setup() {
   // Enable the interupts to exec on any transition of A or B.
   attachInterrupt(digitalPinToInterrupt(aPin), ISR_A, CHANGE);
   attachInterrupt(digitalPinToInterrupt(bPin), ISR_B, CHANGE);
+  interrupts();             // enable all interrupts
 }
 
 void loop() {
@@ -82,10 +89,6 @@ void loop() {
     interruptFlag = false;
     motorPos = motorPos_ISR;
   }while(interruptFlag);
-
-  Serial.println(motorPos*0.9);
-  Serial.println(counterTime);
-  
 }
 
 /*
@@ -148,7 +151,6 @@ void ISR_A(){
   interruptFlag = true;
   
   motorPos_ISR = dir ? (motorPos_ISR + 1) : (motorPos_ISR - 1);
-  counterTime++;
   };
 
 void ISR_B(){
@@ -158,7 +160,12 @@ void ISR_B(){
   interruptFlag = true;
   
   motorPos_ISR = dir ? (motorPos_ISR + 1) : (motorPos_ISR - 1);
-  counterTime++;
   };
 
+SIGNAL(TIMER0_COMPA_vect) {
+   unsigned long currentMillis = millis();
+   counterTime++;
+   Serial.println(motorPos*0.9);
+   Serial.println(counterTime);
+}
 
