@@ -1,3 +1,7 @@
+//To use this put the code into the arduino first and make sure not to open the serial window
+//Then run this code and it will output the data into .txt
+//Output will be time and position of the encoder
+
 import processing.serial.*;
 Serial mySerial;
 PrintWriter output;

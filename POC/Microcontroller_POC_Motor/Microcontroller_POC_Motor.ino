@@ -83,8 +83,8 @@ void loop() {
     motorPos = motorPos_ISR;
   }while(interruptFlag);
 
-  Serial.println(motorPos);
-  Serial.println(dir);
+  Serial.println(motorPos*0.9);
+  Serial.println(counterTime);
   
 }
 
@@ -148,6 +148,7 @@ void ISR_A(){
   interruptFlag = true;
   
   motorPos_ISR = dir ? (motorPos_ISR + 1) : (motorPos_ISR - 1);
+  counterTime++;
   };
 
 void ISR_B(){
@@ -157,6 +158,7 @@ void ISR_B(){
   interruptFlag = true;
   
   motorPos_ISR = dir ? (motorPos_ISR + 1) : (motorPos_ISR - 1);
+  counterTime++;
   };
 
 
