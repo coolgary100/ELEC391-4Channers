@@ -89,7 +89,11 @@ void loop() {
     interruptFlag = false;
     motorPos = motorPos_ISR;
   }while(interruptFlag);
+ Serial.println(motorPos*0.9);
+
 }
+
+
 
 /*
 ================================================
@@ -161,11 +165,11 @@ void ISR_B(){
   
   motorPos_ISR = dir ? (motorPos_ISR + 1) : (motorPos_ISR - 1);
   };
-
+/*
 SIGNAL(TIMER0_COMPA_vect) {
    unsigned long currentMillis = millis();
    counterTime++;
-   Serial.println(motorPos*0.9);
-   Serial.println(counterTime);
+  
+   //Serial.println(counterTime);
 }
-
+*/

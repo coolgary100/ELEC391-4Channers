@@ -1,9 +1,27 @@
-To do list because i forget everything. Just put an x if it's done?
+To-Do:
 
-- Test Arduino Code on the Board
-	-> Decide any additional features to add or change
-	-> Decide if it's enough to meet the power/digital electronics 
-- Decide how we will build the encoder
-	-> Test
-- Clean out system model 
-	->Decide what we need for the initial POC system model
+Measure Step/Impulse Response - Feb 17th, Gary
+Get the Transfer Function - Feb 17th, Gary (and zach)
+	-> Pull out Inertia (J), Friction (B) and Spring (K) from the response we get from the motor
+Model the system with the transfer function - Feb 19th, Zach
+	-> Simulate moving the motor in Matlab
+	-> Put Matlab system into Arduino
+Define motor specifications - Feb 21st, Zach (and gary)
+	-> Decide on the requirements for drawing with the motor
+		-> How fast does it have to write an image
+		-> What way is most efficient to draw (probably by line is easiest)
+	-> Prelim calculations to determine restrictions
+		-> size, windings, speed, acceleration, etc.
+Start the Controls portion of the slide deck - Feb 16th, Zach
+	-> Write up a quick outline of steps to completion
+		-> Purpose, method, requirements, roles, etc.
+	-> Review Stocco's site for information on slides
+PID controller Feb 23, Zach & Gary
+	-> Find appropriate PID values to make our motors follow the desired path Feb. 23
+Put everything onto a protoboard Feb. 23+
+
+Power everything from a 12V power supply (Extra-Feature)
+	-> Proper voltage source with Power regulation
+
+Talk about how the encoder and the encoder wheel will fit onto motor team's motor design
+Talk about what the robot arm will look like with motor teams 
