@@ -22,6 +22,7 @@ volatile long int motorPos_ISR = 0; //in degrees.  Assuming 360
 volatile bool dir = true; // true if forward, false if backward
 volatile bool transition = false; // true if last transition A, false if B
 volatile bool interruptFlag = false;
+volatile bool miliFlag = false;
 volatile long int counterTime = 0;
 
 // State Parameters:
@@ -89,9 +90,13 @@ void loop() {
     interruptFlag = false;
     motorPos = motorPos_ISR;
   }while(interruptFlag);
- Serial.println(motorPos*0.9);
 
+  if(miliFlag) {
+    miliFlag = false;
+    Serial.println(motorPos*0.9);
+  }
 }
+
 
 
 
@@ -165,11 +170,11 @@ void ISR_B(){
   
   motorPos_ISR = dir ? (motorPos_ISR + 1) : (motorPos_ISR - 1);
   };
-/*
+
 SIGNAL(TIMER0_COMPA_vect) {
    unsigned long currentMillis = millis();
-   counterTime++;
-  
+   //counterTime++;
+   miliFlag = true;
    //Serial.println(counterTime);
 }
-*/
+
