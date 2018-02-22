@@ -7,13 +7,16 @@
 % Enter optimized PID values here.
 % No more than 3 significant figures per gain value.
 
-PID0 = [0 0 0]; %Yellow Graph
-PID1 = [0 0 0];                      %Blue Graph
-\
+Kd = 0.018;
+Kp = 55*Kd;
+
+PID0 = [Kp 0 Kd]; %Yellow Graph
+%PID1 = [0 0 0];                      %Blue Graph
+
 % Enter feedback sensor values here.
 
-FB0 = 1/Sens0;
-FB1 = 1/Sens1;
+%FB0 = 1/Sens0;
+%FB1 = 1/Sens1;
 
 
 % =====================
