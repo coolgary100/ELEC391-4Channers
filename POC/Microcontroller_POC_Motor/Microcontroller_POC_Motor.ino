@@ -1,3 +1,5 @@
+#include <PID_v1.h>
+
 /*
   Purpose: To control a motor's speed and direction using feedback from an optical encoder
   Requirements: Arduino Uno, Encoder, Motor, Current driver
@@ -37,14 +39,22 @@ stateType nstate = forward;
 
 double motorPos = 0;
 
+//Define Variables we'll be connecting to
+double Setpoint, Input, Output;
+double Kd = 0.018;
+double Kp = 55*Kd;
+
+//Specify the links and initial tuning parameters
+//PID myPID(&Input, &Output, &Setpoint, Kp, 0, Kd, DIRECT);
+
 void setup() {
 
   // initialize output pins:
   pinMode(enablePin, OUTPUT);
   pinMode(fwdPin, OUTPUT);
   pinMode(bwdPin, OUTPUT);
-  digitalWrite(enablePin, LOW);
-  digitalWrite(fwdPin, LOW);
+  analogWrite(enablePin, 255);
+  digitalWrite(fwdPin, HIGH);
   digitalWrite(bwdPin, LOW);
   
   // initialize input pins:
@@ -67,34 +77,60 @@ void setup() {
   // Enable the interupts to exec on any transition of A or B.
   attachInterrupt(digitalPinToInterrupt(aPin), ISR_A, CHANGE);
   attachInterrupt(digitalPinToInterrupt(bPin), ISR_B, CHANGE);
+
+  //PID controller
+
+  //initialize the variables we're linked to
+  Setpoint = 100;
+
+  //tell the PID to range
+  //myPID.SetOutputLimits(-360, 360);
+
+  //turn the PID on
+  //myPID.SetMode(AUTOMATIC);
   interrupts();             // enable all interrupts
 }
 
 void loop() {
 
   //If the button is pressed, got to next state
-
-  byte PWM_out_level;
-
-  PWM_out_level = 30;
-
-  analogWrite(enablePin, PWM_out_level);
-  
+ /* 
   if( digitalRead(buttonPin) == LOW){
     state = nstate;
     delay(100);
     pinUpdate(state, &nstate);
     };
-
+*/
   do{
     interruptFlag = false;
     motorPos = motorPos_ISR;
   }while(interruptFlag);
 
+  //motorPos = (double)((int)(motorPos*9) % 3600) / 10.00;
   if(miliFlag) {
     miliFlag = false;
+    //Serial.println((byte)Output);
     Serial.println(motorPos*0.9);
+    Serial.println(millis());
   }
+
+  
+
+  //PID Controller
+  //Input = motorPos;
+  //myPID.Compute();
+  /*
+  if(Output > 180){
+    digitalWrite(fwdPin, LOW);
+    digitalWrite(bwdPin, HIGH);
+    }
+  else{
+    digitalWrite(fwdPin, HIGH);
+    digitalWrite(bwdPin, LOW);
+    }
+    
+  analogWrite(enablePin, abs((byte)(((Output - 180) / 180) * 255)));
+  */
 }
 
 
@@ -109,6 +145,7 @@ FUNCTIONS
 /*
 Adjusts pin ouptuts based on current state.
 */
+/*
 void pinUpdate(stateType state, stateType* nstate){
   if(state == backward){
     digitalWrite(enablePin, HIGH);
@@ -129,7 +166,7 @@ void pinUpdate(stateType state, stateType* nstate){
     *nstate = forward;
     }
   };
-
+*/
 /*
 ================================================
 ISR ROUTINES
