@@ -7,8 +7,8 @@
 % Enter optimized PID values here.
 % No more than 3 significant figures per gain value.
 
-Kd = 0.018;
-Kp = 55*Kd;
+Kd = 2.2;
+Kp = 0.008*Kd;
 
 PID0 = [Kp 0 Kd]; %Yellow Graph
 %PID1 = [0 0 0];                      %Blue Graph

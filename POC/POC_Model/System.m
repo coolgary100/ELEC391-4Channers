@@ -62,8 +62,8 @@ TConst0 = 1;
 
 % Mechanical Motor Dynamics
 % -------------------------
-Mech0n  = [0 0 51.282^2];               % Numerator
-Mech0d  = [1 2*51.282 51.252^2];  
+Mech0n  = [0 0 2^2];               % Numerator
+Mech0d  = [1 2*2 2^2];  
 
 % Denominator is Js^2 + Bs + K (Spring constant (700 mNm/rev) converted to 
 % Nm (Multiple by 10^(-3)) and rev to rad (Divide by 2pi))

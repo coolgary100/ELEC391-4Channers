@@ -1,5 +1,3 @@
-#include <PID_v1.h>
-
 /*
   Purpose: To control a motor's speed and direction using feedback from an optical encoder
   Requirements: Arduino Uno, Encoder, Motor, Current driver
@@ -24,36 +22,26 @@ volatile long int motorPos_ISR = 0; //in degrees.  Assuming 360
 volatile bool dir = true; // true if forward, false if backward
 volatile bool transition = false; // true if last transition A, false if B
 volatile bool interruptFlag = false;
-volatile bool miliFlag = false;
-volatile long int counterTime = 0;
-
-// State Parameters:
-enum stateType {
-  softStop,
-  forward,
-  backward
-  };
-
-stateType state = softStop;
-stateType nstate = forward;
 
 double motorPos = 0;
 
 //Define Variables we'll be connecting to
-double Setpoint, Input, Output;
-double Kd = 0.018;
-double Kp = 55*Kd;
-
-//Specify the links and initial tuning parameters
-//PID myPID(&Input, &Output, &Setpoint, Kp, 0, Kd, DIRECT);
+const double Kd = 0.25;
+const double Kp = 1.7*Kd;
+const double Ki = 0;
+double Error, previousError;
+double input, output;
+double Integral = 0;
+double setPoint = 100;
 
 void setup() {
 
+  
   // initialize output pins:
   pinMode(enablePin, OUTPUT);
   pinMode(fwdPin, OUTPUT);
   pinMode(bwdPin, OUTPUT);
-  analogWrite(enablePin, 255);
+  analogWrite(enablePin, output);
   digitalWrite(fwdPin, HIGH);
   digitalWrite(bwdPin, LOW);
   
@@ -64,9 +52,6 @@ void setup() {
 
   //Timer Initialization
   noInterrupts();           // disable all interrupts
-
-  OCR0A = 0xAF;
-  TIMSK0 |= _BV(OCIE0A);
   
   Serial.begin(9600);
 
@@ -77,64 +62,40 @@ void setup() {
   // Enable the interupts to exec on any transition of A or B.
   attachInterrupt(digitalPinToInterrupt(aPin), ISR_A, CHANGE);
   attachInterrupt(digitalPinToInterrupt(bPin), ISR_B, CHANGE);
-
-  //PID controller
-
-  //initialize the variables we're linked to
-  Setpoint = 100;
-
-  //tell the PID to range
-  //myPID.SetOutputLimits(-360, 360);
-
-  //turn the PID on
-  //myPID.SetMode(AUTOMATIC);
   interrupts();             // enable all interrupts
 }
 
-void loop() {
-
-  //If the button is pressed, got to next state
- /* 
-  if( digitalRead(buttonPin) == LOW){
-    state = nstate;
-    delay(100);
-    pinUpdate(state, &nstate);
-    };
-*/
+void loop() {  
   do{
     interruptFlag = false;
     motorPos = motorPos_ISR;
   }while(interruptFlag);
 
-  //motorPos = (double)((int)(motorPos*9) % 3600) / 10.00;
-  if(miliFlag) {
-    miliFlag = false;
-    //Serial.println((byte)Output);
-    Serial.println(motorPos*0.9);
-    Serial.println(millis());
-  }
-
+  motorPos = motorPos * 0.9;
+  Serial.print("Motor pos ");
+  Serial.println(motorPos);
+  input = motorPos;
+  output = PID_Controller(input, setPoint);
+  Serial.print("Output ");
+  Serial.println(output);
+  output = output;
+  if(output >= 0) {
+     digitalWrite(fwdPin, LOW);
+     digitalWrite(bwdPin, HIGH);
+   }
+   else {
+     digitalWrite(fwdPin, HIGH);
+     digitalWrite(bwdPin, LOW);
+   }
+   if(abs(Error) < 40) {
+    setPoint = -setPoint;
+    Serial.println("SWITCHED ");
+   }
+   
+  analogWrite(enablePin, byte abs(output));  
+  //analogWrite(enablePin, abs((byte)(((Output - 180) / 180) * 155)));
   
-
-  //PID Controller
-  //Input = motorPos;
-  //myPID.Compute();
-  /*
-  if(Output > 180){
-    digitalWrite(fwdPin, LOW);
-    digitalWrite(bwdPin, HIGH);
-    }
-  else{
-    digitalWrite(fwdPin, HIGH);
-    digitalWrite(bwdPin, LOW);
-    }
-    
-  analogWrite(enablePin, abs((byte)(((Output - 180) / 180) * 255)));
-  */
 }
-
-
-
 
 /*
 ================================================
@@ -142,53 +103,29 @@ FUNCTIONS
 ================================================
 */
 
-/*
-Adjusts pin ouptuts based on current state.
-*/
-/*
-void pinUpdate(stateType state, stateType* nstate){
-  if(state == backward){
-    digitalWrite(enablePin, HIGH);
-    digitalWrite(fwdPin, LOW);
-    digitalWrite(bwdPin, HIGH);
-    *nstate = softStop;
+double PID_Controller (double input, double desired) {
+  Error = desired - input;
+  Integral = Integral + Error;
+  if(Error == 0) {
+      Integral = 0;
   }
-  else if(state == forward){
-    digitalWrite(enablePin, HIGH);
-    digitalWrite(fwdPin, HIGH);
-    digitalWrite(bwdPin, LOW);
-    *nstate = backward;
+  if(abs(Error) > 40) {
+    Integral = 0;
   }
-  else{
-    digitalWrite(enablePin, LOW);
-    digitalWrite(fwdPin, LOW);
-    digitalWrite(bwdPin, LOW);
-    *nstate = forward;
-    }
-  };
-*/
-/*
-================================================
-ISR ROUTINES
-================================================
-*/
-  //Read from the encoder
-  /*
-  A,B = 0,0 ->1 staring point
-  A,B = 1,0 ->2 motor is moving forward
-  A,B = 0,1 ->2 motor is moving backward
-  A,B = 1,1 ->3 if it isn't this, dir is rev
 
-  A,B = 1,1 ->1 starting point
-  A,B = 0,1 ->2 motor is moving forward
-  A,B = 1,0 ->2 motor is moving backward
-  A,B = 0,0 ->3 if it isn't this, dir is rev
+  double Derivative = Error - previousError;
+  previousError = Error;
 
-  We will use an external interupt to count transitions of a and b with a counter.
-  We will use an timer interrupt to track time accurately.
-  If we are limited to 1 pin, we could connect A and B to an XOR gate and connect to
-  our external interrupt.  On the ext we read A and B.
-  */
+  double output;
+  output = Kp*Error + Ki*Integral + Kd*Derivative; 
+  if( output >= 85 ) {
+    output = 85;
+  }
+  if( output <= -85) {
+    output = -85;
+  }
+  return output;
+};
   
 void ISR_A(){
   // if last trans was A, then direction was switched
@@ -207,11 +144,3 @@ void ISR_B(){
   
   motorPos_ISR = dir ? (motorPos_ISR + 1) : (motorPos_ISR - 1);
   };
-
-SIGNAL(TIMER0_COMPA_vect) {
-   unsigned long currentMillis = millis();
-   //counterTime++;
-   miliFlag = true;
-   //Serial.println(counterTime);
-}
-
