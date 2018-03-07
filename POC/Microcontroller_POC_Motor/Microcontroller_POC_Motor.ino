@@ -26,13 +26,18 @@ volatile bool interruptFlag = false;
 double motorPos = 0;
 
 //Define Variables we'll be connecting to
-const double Kd = 0.25;
-const double Kp = 1.7*Kd;
-const double Ki = 0;
+//const double Kd = 0.078;
+//const double Kd = 0.005;
+//const double Kp = 1.7*Kd;
+//const double Kp = 51*Kd;
+//const double Ki = 1.7*Kd;
+const double Kd = 0.082;
+const double Kp = 6*Kd;
+const double Ki = 0;  
 double Error, previousError;
 double input, output;
 double Integral = 0;
-double setPoint = 100;
+double setPoint = 360;
 
 void setup() {
 
@@ -75,6 +80,7 @@ void loop() {
   Serial.print("Motor pos ");
   Serial.println(motorPos);
   input = motorPos;
+  delay(5);
   output = PID_Controller(input, setPoint);
   Serial.print("Output ");
   Serial.println(output);
@@ -87,11 +93,11 @@ void loop() {
      digitalWrite(fwdPin, HIGH);
      digitalWrite(bwdPin, LOW);
    }
-   if(abs(Error) < 40) {
+   /*if(abs(Error) < 40) {
     setPoint = -setPoint;
     Serial.println("SWITCHED ");
    }
-   
+   */
   analogWrite(enablePin, byte abs(output));  
   //analogWrite(enablePin, abs((byte)(((Output - 180) / 180) * 155)));
   

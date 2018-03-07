@@ -7,10 +7,29 @@
 % Enter optimized PID values here.
 % No more than 3 significant figures per gain value.
 
-Kd = 2.2;
-Kp = 0.008*Kd;
+%Kd = 11.2;
+%Kp = 1.2*Kd;
+%Ki = 0.7*Kd;
 
-PID0 = [Kp 0 Kd]; %Yellow Graph
+%Kd = 0.10;
+%Kp = 54*Kd;
+%Ki = 0;
+
+Kd = 0.11;
+Kp = 6*Kd;
+Ki = 0;
+
+%Kd = 0.08;
+%Kp = 1*Kd;
+
+%Kd = 0.23;
+%Kp = 1.98*Kd;
+%Ki = 0.03*Kd;
+
+%Kd = 0.018;
+%Kp = 51*Kd;
+
+PID0 = [Kp Ki Kd]; %Yellow Graph
 %PID1 = [0 0 0];                      %Blue Graph
 
 % Enter feedback sensor values here.

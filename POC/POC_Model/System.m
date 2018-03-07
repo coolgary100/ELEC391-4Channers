@@ -46,14 +46,14 @@
 %Elec0n  = [0 0 1];               % Numerator
 %Elec0d  = [0 0 12/0.93];     % The denominator is sL + R where L is 0.362 mH and R is 5.39 Ohms
 
-Elec0n = [0 0 1];
-Elec0d = [0 0 1];
+%Elec0n = [0 0 1];
+%Elec0d = [0 0 1];
 
 % Torque Const & Back EMF
 % -----------------------
 %TConst0  = (122.8/100000)/(0.93-0.19); %Max Torque/(stall current - no-load current)
 
-TConst0 = 1;
+%TConst0 = 1;
 
 %BackEMF0 = 1/(((4800/12)/60)*2*pi); 
 
