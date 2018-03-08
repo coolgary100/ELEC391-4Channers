@@ -47,9 +47,8 @@ const double Kd = 0.283718414734085;
 double Error, previousError;
 double input, output;
 double Integral = 0;
-double setPoint = 0;
+double setPoint = 360;
 
-int t = 0;
 bool milliSet = false;
 
 void setup() {
@@ -88,19 +87,16 @@ void loop() {
     interruptFlag = false;
     motorPos = motorPos_ISR;
   }while(interruptFlag);
-  //t = millis();
+
   motorPos = motorPos * 0.9;
-  //input = motorPos;
-  
-  /*if(t > 10000){
-    setPoint = 360;
-    }
-  */  
+  Serial.print("Motor pos ");
   Serial.println(motorPos);
-  Serial.println(t);
-  //Serial.print("");
-  
-  output = PID_Controller(motorPos, setPoint);
+  input = motorPos;
+  //delay(5);
+  output = PID_Controller(input, setPoint);
+  Serial.print("Output ");
+  Serial.println(output);
+  output = output;
   if(output >= 0) {
      digitalWrite(fwdPin, LOW);
      digitalWrite(bwdPin, HIGH);
@@ -109,6 +105,15 @@ void loop() {
      digitalWrite(fwdPin, HIGH);
      digitalWrite(bwdPin, LOW);
    }
+   /*if(abs(Error) < 40) {
+    setPoint = -setPoint;
+    Serial.println("SWITCHED ");
+   }
+   */
+
+  /*if(!(millis() % 5000)){
+      setPoint += 120;
+  }*/
   analogWrite(enablePin, byte abs(output));  
   //analogWrite(enablePin, abs((byte)(((Output - 180) / 180) * 155)));
   
