@@ -7,11 +7,11 @@
 */
 
 // Pin Assignments
-const byte aPin = 2;
-const byte bPin = 3;
-const byte enablePin = 9;
-const byte fwdPin = 5;
-const byte bwdPin = 6;
+const byte aPin = 2; //Slot detector A pin
+const byte bPin = 3; //Slot detector B pin
+const byte enablePin = 9; //PWM signal to the current driver
+const byte fwdPin = 5; //Pin to make motor go forward
+const byte bwdPin = 6; //Pin to make motor go backwards
 const byte buttonPin = 7;
 
 // System Clock Frequency
@@ -44,6 +44,7 @@ const double Kp = 0.353306578885394;
 const double Ki = 0.0118608742288199;
 const double Kd = 0.283718414734085; 
 
+//Used for PID Controller function
 double Error, previousError;
 double input, output;
 double Integral = 0;
@@ -83,24 +84,27 @@ void setup() {
 }
 
 void loop() {  
+  //Grabs the motor position using 2 interrupt service routines
   do{
     interruptFlag = false;
     motorPos = motorPos_ISR;
   }while(interruptFlag);
 
-  motorPos = motorPos * 0.9;
+  motorPos = motorPos * 0.9; //Quadratrue encoder so multiply the motorPos by 0.9 degrees
   Serial.print("Motor pos ");
   Serial.println(motorPos);
-  input = motorPos;
+  input = motorPos; //Pass motorPos to the input for our PID function
   //delay(5);
   output = PID_Controller(input, setPoint);
   Serial.print("Output ");
   Serial.println(output);
   output = output;
-  if(output >= 0) {
+  //If the output from our PID controller is greater than 0 then we move the motor forward
+  if(output >= 0) { 
      digitalWrite(fwdPin, LOW);
      digitalWrite(bwdPin, HIGH);
    }
+   //If the output from our PID controller is negative then we move the motor backwards
    else {
      digitalWrite(fwdPin, HIGH);
      digitalWrite(bwdPin, LOW);
@@ -111,9 +115,10 @@ void loop() {
    }
    */
 
-  /*if(!(millis() % 5000)){
+  //Increment the setpoint by 120 every 5 seconds.
+  if(!(millis() % 5000)){
       setPoint += 120;
-  }*/
+  }
   analogWrite(enablePin, byte abs(output));  
   //analogWrite(enablePin, abs((byte)(((Output - 180) / 180) * 155)));
   
@@ -125,21 +130,27 @@ FUNCTIONS
 ================================================
 */
 
+/*PID controller that takes and input and a desired position and calculates the output
+/Based on the Kp, Kd, and Ki values provided above. 
+*/
 double PID_Controller (double input, double desired) {
   Error = desired - input;
-  Integral = Integral + Error;
+  Integral = Integral + Error; //Accumulate error for Integral term
+  //If the error is within 1 then we set the integral term to 0
   if(abs(Error) < 1) {
       Integral = 0;
   }
+  //If error is outside of 60 then the integral term will be set to 0
   if(abs(Error) > 60) {
     Integral = 0;
   }
   
-  double Derivative = Error - previousError;
+  double Derivative = Error - previousError; //Calculate the error over time
   previousError = Error;
 
   double output;
   output = Kp*Error + Ki*Integral + Kd*Derivative; 
+  //Ensuring maximum pwm value is 255 for our motor. 
   if( output >= 255 ) {
     output = 255;
   }
